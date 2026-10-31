@@ -26,6 +26,7 @@ import {
 import { showToast } from "./toast.js";
 import { initTheme } from "./theme.js";
 import { attachPhoneMask, isValidPhone, formatPhone } from "./phone-mask.js";
+import { attachMoneyMask, formatMoney } from "./money-mask.js";
 
 const loginView = document.getElementById("login-view");
 const dashboardView = document.getElementById("dashboard-view");
@@ -63,6 +64,7 @@ let renderToken = 0;
 initTheme();
 attachPhoneMask(manualSalePhoneInput);
 attachPhoneMask(document.getElementById("settings-admin-whatsapp"));
+attachMoneyMask(document.getElementById("settings-price"));
 
 if (!isFirebaseConfigured) {
   showToast("⚠️ Configure as credenciais do Firebase em js/firebase-config.js");
@@ -289,7 +291,7 @@ async function loadSettingsForm() {
 
   document.getElementById("settings-title").value = merged.title;
   document.getElementById("settings-prize").value = merged.prize;
-  document.getElementById("settings-price").value = merged.priceLabel;
+  document.getElementById("settings-price").value = formatMoney(merged.priceLabel);
   document.getElementById("settings-draw-date").value = toDatetimeLocalValue(merged.drawDateISO);
   document.getElementById("settings-pix-key").value = merged.pixKey;
   document.getElementById("settings-admin-whatsapp").value = formatPhone(toLocalWhatsappDigits(merged.adminWhatsapp));
