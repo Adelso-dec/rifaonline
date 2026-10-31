@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Organizador — Rifa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <div id="login-view" class="login-view">
+    <div class="login-card">
+      <p class="eyebrow eyebrow-dark">Área restrita</p>
+      <h1>Painel do organizador</h1>
+      <p class="modal-sub">Entre com sua conta para gerenciar os números da rifa.</p>
+      <form id="login-form" novalidate>
+        <label>
+          E-mail
+          <input type="email" id="login-email" required autocomplete="username" />
+        </label>
+        <label>
+          Senha
+          <input type="password" id="login-password" required autocomplete="current-password" />
+        </label>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+      <p id="login-error" class="login-error hidden"></p>
+      <a href="index.html" class="back-link">&larr; Voltar para a página da rifa</a>
+    </div>
+  </div>
+
+  <div id="dashboard-view" class="dashboard-view hidden">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow eyebrow-dark">Painel do organizador</p>
+        <h1 id="admin-raffle-title">Rifa</h1>
+      </div>
+      <div class="admin-header-actions">
+        <button id="theme-toggle" class="theme-toggle theme-toggle-dark" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+        <button id="export-csv" class="btn-ghost" type="button">Exportar CSV</button>
+        <button id="logout-btn" class="btn-secondary" type="button">Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <section class="campaign-card">
+        <div class="campaign-card-header">
+          <div>
+            <h2>Campanha</h2>
+            <p class="modal-sub">Gerencie várias rifas (campanhas) no mesmo painel.</p>
+          </div>
+          <button id="new-campaign-btn" class="btn-ghost" type="button">+ Nova campanha</button>
+        </div>
+
+        <div class="campaign-controls">
+          <label class="campaign-select-label">
+            Campanha ativa
+            <select id="campaign-select"></select>
+          </label>
+          <div class="campaign-actions">
+            <button id="copy-link-btn" class="btn-ghost-sm" type="button">Copiar link público</button>
+            <button id="set-default-btn" class="btn-ghost-sm" type="button">Tornar padrão</button>
+          </div>
+        </div>
+        <p class="campaign-default-note" id="campaign-default-note"></p>
+      </section>
+
+      <section class="settings-card">
+        <h2>Configurações da rifa</h2>
+        <p class="modal-sub">Essas informações aparecem na página pública da rifa.</p>
+        <form id="settings-form" class="settings-grid" novalidate>
+          <label>
+            Nome da rifa
+            <input type="text" id="settings-title" required />
+          </label>
+          <label>
+            Prêmio
+            <input type="text" id="settings-prize" required />
+          </label>
+          <label>
+            Preço do número
+            <input type="text" id="settings-price" required placeholder="R$ 10,00" />
+          </label>
+          <label>
+            Data e hora do sorteio
+            <input type="datetime-local" id="settings-draw-date" required />
+          </label>
+          <label>
+            Chave PIX
+            <input type="text" id="settings-pix-key" required placeholder="email@exemplo.com" />
+          </label>
+          <label>
+            WhatsApp do organizador
+            <input
+              type="tel"
+              id="settings-admin-whatsapp"
+              required
+              inputmode="numeric"
+              maxlength="14"
+              placeholder="(00)00000-0000"
+            />
+          </label>
+          <label>
+            Quantidade de números
+            <input type="number" id="settings-total-numbers" required min="10" max="1000" step="1" placeholder="100" />
+          </label>
+          <div class="toggle-row">
+            <span class="toggle-label-text">Mostrar data do sorteio na página pública</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settings-show-draw-date" checked />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="settings-actions">
+            <button type="submit" class="btn-primary">Salvar configurações</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="draw-card">
+        <div class="draw-card-header">
+          <div>
+            <h2>Sorteio</h2>
+            <p class="modal-sub">Sorteia aleatoriamente um número entre os já vendidos.</p>
+          </div>
+          <button id="draw-button" class="btn-primary" type="button">Realizar sorteio</button>
+        </div>
+
+        <div id="draw-result" class="draw-result hidden">
+          <span class="draw-result-badge" id="draw-result-number">00</span>
+          <div>
+            <p class="draw-result-label">Número vencedor</p>
+            <p class="draw-result-name" id="draw-result-name"></p>
+            <p class="draw-result-date" id="draw-result-date"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-summary">
+        <div class="summary-card">
+          <span class="summary-value" id="summary-available">0</span>
+          <span class="summary-label">Disponíveis</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value" id="summary-reserved">0</span>
+          <span class="summary-label">Reservados</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value" id="summary-sold">0</span>
+          <span class="summary-label">Vendidos</span>
+        </div>
+      </section>
+
+      <section class="admin-filters">
+        <input type="search" id="search-input" class="search-input" placeholder="Buscar por número..." />
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all" type="button">Todos</button>
+          <button class="filter-btn" data-filter="available" type="button">Disponíveis</button>
+          <button class="filter-btn" data-filter="reserved" type="button">Reservados</button>
+          <button class="filter-btn" data-filter="sold" type="button">Vendidos</button>
+        </div>
+      </section>
+
+      <section class="table-wrap">
+        <table id="numbers-table">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Status</th>
+              <th>Comprador</th>
+              <th>WhatsApp</th>
+              <th>Expira em</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="numbers-tbody"></tbody>
+        </table>
+      </section>
+
+      <section class="danger-card">
+        <h2>Zona de risco</h2>
+        <p class="modal-sub">
+          Apaga todas as reservas/vendas e o resultado do sorteio <strong>desta campanha</strong>. As
+          configurações (nome, prêmio, preço, etc.) são mantidas. Essa ação não pode ser desfeita.
+        </p>
+        <button id="reset-campaign-btn" class="btn-danger" type="button">Resetar números desta campanha</button>
+
+        <hr class="danger-divider" />
+
+        <p class="modal-sub">
+          Apaga esta campanha <strong>permanentemente</strong> — configurações, números, vendas e resultado
+          do sorteio. Não é possível desfazer.
+        </p>
+        <button id="delete-campaign-btn" class="btn-danger" type="button">Apagar esta campanha</button>
+      </section>
+    </main>
+  </div>
+
+  <div id="manual-sale-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="manual-sale-title">
+    <div class="modal">
+      <button id="manual-sale-close" class="modal-close" aria-label="Fechar" type="button">&times;</button>
+
+      <span class="modal-badge modal-badge-amber" id="manual-sale-badge">00</span>
+      <h2 id="manual-sale-title">Registrar venda manual</h2>
+      <p class="modal-sub">
+        Use para vendas combinadas fora do site (dinheiro, outro meio). O número será marcado como
+        <strong>vendido</strong> imediatamente, sem passar por reserva.
+      </p>
+
+      <form id="manual-sale-form" novalidate>
+        <label>
+          Nome completo
+          <input type="text" id="manual-sale-name" required autocomplete="name" />
+        </label>
+        <label>
+          WhatsApp
+          <input
+            type="tel"
+            id="manual-sale-phone"
+            required
+            inputmode="numeric"
+            maxlength="14"
+            placeholder="(00)00000-0000"
+            autocomplete="tel"
+          />
+        </label>
+        <button type="submit" class="btn-primary">Confirmar venda</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="new-campaign-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="new-campaign-title">
+    <div class="modal">
+      <button id="new-campaign-close" class="modal-close" aria-label="Fechar" type="button">&times;</button>
+
+      <span class="modal-badge" aria-hidden="true">🎉</span>
+      <h2 id="new-campaign-title">Nova campanha</h2>
+      <p class="modal-sub">
+        Dá para configurar prêmio, preço, data e os demais detalhes depois, no formulário de configurações.
+      </p>
+
+      <form id="new-campaign-form" novalidate>
+        <label>
+          Nome da campanha
+          <input type="text" id="new-campaign-name" required placeholder="Ex: Rifa de Natal 2026" />
+        </label>
+        <button type="submit" class="btn-primary">Criar campanha</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /raffles/{raffleId}/numbers/{numberId} {
+      // Documento público: só status e prazo de expiração (sem dados pessoais).
+      // Necessário para a grade pública mostrar quais números estão livres.
+      allow read: if true;
+
+      // Visitante (não autenticado) só pode reservar um número:
+      // - que ainda não existe, OU está "available", OU está "reserved" mas já expirou;
+      // - e só pode gravar os campos "status"/"expiresAt", nunca dados do comprador aqui.
+      allow write: if request.auth == null
+        && request.resource.data.status == "reserved"
+        && request.resource.data.keys().hasOnly(["status", "expiresAt"])
+        && (
+          !exists(/databases/$(database)/documents/raffles/$(raffleId)/numbers/$(numberId))
+          || resource.data.status == "available"
+          || (resource.data.status == "reserved" && resource.data.expiresAt < request.time)
+        );
+
+      // Organizador autenticado (painel admin) pode fazer qualquer alteração,
+      // incluindo confirmar pagamento (status "sold") ou liberar reservas.
+      allow write: if request.auth != null;
+
+      match /private/contact {
+        // Nome e WhatsApp do comprador: só o organizador autenticado pode ler.
+        allow read: if request.auth != null;
+
+        // Visitante pode gravar o contato só quando também teria permissão
+        // de reservar o número correspondente (mesma condição do documento público).
+        allow write: if request.auth == null
+          && request.resource.data.keys().hasOnly(["buyerName", "buyerPhone", "reservedAt"])
+          && (
+            !exists(/databases/$(database)/documents/raffles/$(raffleId)/numbers/$(numberId))
+            || get(/databases/$(database)/documents/raffles/$(raffleId)/numbers/$(numberId)).data.status == "available"
+            || (
+              get(/databases/$(database)/documents/raffles/$(raffleId)/numbers/$(numberId)).data.status == "reserved"
+              && get(/databases/$(database)/documents/raffles/$(raffleId)/numbers/$(numberId)).data.expiresAt < request.time
+            )
+          );
+
+        allow write: if request.auth != null;
+      }
+    }
+
+    match /raffles/{raffleId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Guarda qual campanha a página pública mostra quando o link não traz ?rifa=ID.
+    match /meta/app {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

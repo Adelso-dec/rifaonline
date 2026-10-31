@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rifa Online</title>
+  <meta name="description" content="Escolha seu número e concorra a prêmios! Participe da rifa online, com pagamento via PIX." />
+
+  <!-- Open Graph / preview ao compartilhar o link (WhatsApp, Facebook, etc.) -->
+  <!-- TODO: depois do deploy, trocar og:url e og:image para a URL absoluta real do GitHub Pages -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:title" content="Rifa Online" />
+  <meta property="og:description" content="Escolha seu número e concorra a prêmios! Participe da rifa online, com pagamento via PIX." />
+  <meta property="og:image" content="og-image.png" />
+  <meta property="og:url" content="" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Rifa Online" />
+  <meta name="twitter:description" content="Escolha seu número e concorra a prêmios! Participe da rifa online, com pagamento via PIX." />
+  <meta name="twitter:image" content="og-image.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <header class="hero">
+    <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema claro/escuro" title="Alternar tema">🌙</button>
+
+    <div class="hero-inner">
+      <p class="eyebrow">Rifa Online</p>
+      <h1 id="raffle-title">Carregando…</h1>
+      <p id="raffle-prize" class="prize"></p>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value" id="raffle-price"></span>
+          <span class="stat-label">por número</span>
+        </div>
+        <div class="stat-divider" id="stats-divider" aria-hidden="true"></div>
+        <div class="stat" id="draw-date-stat">
+          <span class="stat-value" id="countdown">--d --h --m</span>
+          <span class="stat-label">até o sorteio</span>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p class="progress-label" id="progress-label">Carregando disponibilidade…</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="winner-banner" class="winner-banner hidden" aria-live="polite">
+      <span class="winner-icon" aria-hidden="true">🏆</span>
+      <div>
+        <p class="winner-label">Número sorteado</p>
+        <p class="winner-number" id="winner-number"></p>
+        <p class="winner-name" id="winner-name"></p>
+      </div>
+    </section>
+
+    <section class="legend" aria-label="Legenda de status">
+      <span class="legend-item">
+        <span class="legend-swatch available"></span> Disponível
+      </span>
+      <span class="legend-item">
+        <span class="legend-swatch reserved"></span> Reservado
+      </span>
+      <span class="legend-item">
+        <span class="legend-swatch sold"></span> Vendido
+      </span>
+    </section>
+
+    <section id="numbers-grid" class="numbers-grid" aria-label="Números da rifa"></section>
+  </main>
+
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <button id="modal-close" class="modal-close" aria-label="Fechar">&times;</button>
+
+      <div id="step-form" class="modal-step">
+        <span class="modal-badge" id="modal-number-badge">00</span>
+        <h2 id="modal-title">Reservar este número</h2>
+        <p class="modal-sub">
+          Preencha seus dados para garantir o número. Você terá
+          <strong id="reservation-minutes-label"></strong> para efetuar o pagamento.
+        </p>
+        <form id="buyer-form" novalidate>
+          <label>
+            Nome completo
+            <input type="text" id="buyer-name" required autocomplete="name" />
+          </label>
+          <label>
+            WhatsApp
+            <input
+              type="tel"
+              id="buyer-phone"
+              placeholder="(00)00000-0000"
+              required
+              autocomplete="tel"
+              inputmode="numeric"
+              maxlength="14"
+            />
+          </label>
+          <button type="submit" class="btn-primary">Reservar e gerar PIX</button>
+        </form>
+      </div>
+
+      <div id="step-payment" class="modal-step hidden">
+        <div class="success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2>Número reservado!</h2>
+        <p class="modal-sub">
+          Pague via PIX para confirmar sua participação. Sua reserva expira em
+          <strong id="expire-time">30:00</strong>.
+        </p>
+
+        <div class="pix-box">
+          <div>
+            <span class="pix-label">Chave PIX</span>
+            <span id="pix-key" class="pix-value"></span>
+          </div>
+          <button id="copy-pix" class="btn-ghost" type="button">Copiar</button>
+        </div>
+
+        <a id="whatsapp-link" class="btn-whatsapp" href="#" target="_blank" rel="noopener">
+          Enviar comprovante no WhatsApp
+        </a>
+        <button id="finish-btn" class="btn-secondary" type="button">Concluir</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Dúvidas sobre o regulamento? Fale com o organizador pelo WhatsApp.</p>
+    <p class="footer-note">Página em desenvolvimento — dados de exemplo (sem persistência ainda).</p>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
