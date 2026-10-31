@@ -121,19 +121,24 @@ function updateProgress() {
 /* ---------------------------- Grade ---------------------------- */
 function renderGrid() {
   grid.innerHTML = "";
+  const raffleClosed = Boolean(currentSettings.winnerNumber);
+
   for (let i = 1; i <= currentSettings.totalNumbers; i++) {
     const status = getEffectiveStatus(i);
+    const closedAvailable = raffleClosed && status === "available";
     const btn = document.createElement("button");
-    btn.className = `number-cell ${status}`;
-    btn.disabled = status !== "available";
-    btn.setAttribute("aria-label", `Número ${i}, ${statusLabel(status)}`);
+    btn.className = `number-cell ${status}${closedAvailable ? " closed" : ""}`;
+    btn.disabled = status !== "available" || raffleClosed;
+    btn.setAttribute("aria-label", `Número ${i}, ${closedAvailable ? "sorteio encerrado" : statusLabel(status)}`);
 
     let icon = "";
     if (status === "sold") icon = ICONS.check;
     if (status === "reserved") icon = ICONS.clock;
 
     btn.innerHTML = `${icon}${i}`;
-    btn.addEventListener("click", () => openModal(i));
+    if (!raffleClosed) {
+      btn.addEventListener("click", () => openModal(i));
+    }
     grid.appendChild(btn);
   }
   updateProgress();
@@ -147,6 +152,10 @@ function statusLabel(status) {
 
 /* ---------------------------- Modal ---------------------------- */
 function openModal(number) {
+  if (currentSettings.winnerNumber) {
+    showToast("Esta rifa já foi sorteada — não é mais possível comprar números.");
+    return;
+  }
   if (getEffectiveStatus(number) !== "available") {
     showToast("Esse número não está mais disponível.");
     return;

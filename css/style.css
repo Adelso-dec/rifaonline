@@ -382,6 +382,10 @@ main {
   cursor: not-allowed;
 }
 
+.number-cell.closed {
+  opacity: 0.45;
+}
+
 .number-cell:focus-visible {
   outline: 3px solid var(--brand-600);
   outline-offset: 2px;
